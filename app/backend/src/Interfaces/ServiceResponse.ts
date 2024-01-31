@@ -1,7 +1,7 @@
 export type ServiceMessage = { message: string };
 
 type ServiceResponseErrorType = 'badRequest' | 'notFound' | 'unauthorized' |
-'conflict' | 'created' | 'unprocessableEntity';
+'conflict' | 'unprocessableEntity';
 
 export type ServiceResponseError = {
   status: ServiceResponseErrorType,
@@ -9,7 +9,7 @@ export type ServiceResponseError = {
 };
 
 export type ServiceResponseSuccess<T> = {
-  status: 'succesful',
+  status:'succesful' | 'created',
   data: T
 };
 
