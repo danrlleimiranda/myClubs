@@ -6,23 +6,24 @@ export default class AuthMiddleware {
 
   static extractToken(token: string | undefined) {
     if (token) {
-      return token.split(' ')[1];
+      const parts = token.split(' ');
+      if (parts.length === 2 && parts[0] === 'Bearer') {
+        return parts[1];
+      }
     }
   }
 
   auth(req: Request, res: Response, next: NextFunction) {
     const { authorization } = req.headers;
-    const token = AuthMiddleware.extractToken(authorization);
-    if (!token) return res.status(401).json({ message: 'Token not found' });
+    if (!authorization) return res.status(401).json({ message: 'Token not found' });
+    const token = AuthMiddleware.extractToken(authorization) ?? '';
     try {
       const decode = jwt.verify(token, this._secret);
       res.locals.user = decode;
       next();
     } catch (err) {
-      if (err instanceof Error) {
-        return res
-          .status(401).json({ message: 'Token must be a valid token' });
-      }
+      return res
+        .status(401).json({ message: 'Token must be a valid token' });
     }
   }
 }
