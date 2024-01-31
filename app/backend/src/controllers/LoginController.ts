@@ -14,4 +14,11 @@ export default class LoginController {
 
     return res.status(statusHttp).json(serviceResponse.data);
   }
+
+  static async getRole(_req: Request, res: Response) {
+    const { user } = res.locals;
+    const { role } = user;
+
+    return res.status(200).json({ role });
+  }
 }

@@ -14,7 +14,7 @@ export default class LoginService {
   private _secret = process.env.JWT_SECRET ?? 'secret';
   private _invalidMessage = 'Invalid email or password';
 
-  validate({ email, password }: LoginData) {
+  async validateLogin({ email, password }: LoginData) {
     const filled = 'All fields must be filled';
     const loginSchema = Joi.object({
       email: Joi.string().pattern(/^[a-z0-9.]+@[a-z0-9]+\.[a-z]+(\.[a-z]+)?$/i)
@@ -30,12 +30,6 @@ export default class LoginService {
     });
 
     const { error } = loginSchema.validate({ email, password });
-
-    return error;
-  }
-
-  async validateLogin({ email, password }: LoginData) {
-    const error = this.validate({ email, password });
 
     if (error) return { message: error.message };
   }

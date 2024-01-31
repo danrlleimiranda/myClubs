@@ -4,7 +4,7 @@ import loginRouter from './login.routes';
 
 const router = Router();
 
-router.use('/teams', teamsRouter);
 router.use('/login', loginRouter);
+router.use('/teams', teamsRouter);
 
 export default router;
