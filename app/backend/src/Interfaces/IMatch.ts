@@ -6,3 +6,12 @@ export default interface IMatch {
   awayTeamGoals: number
   inProgress: boolean
 }
+
+export interface IMatchPlusTeams extends IMatch{
+  homeTeam: {
+    teamName: 'São Paulo'
+  },
+  awayTeam: {
+    teamName: 'Grêmio'
+  }
+}
