@@ -18,32 +18,50 @@ describe("Rota /login", () => {
     sinon.restore();
   });
 
-  it("GET /login deve retornar um token", async () => {
+  it("POST /login deve retornar um token", async () => {
     const credentials = {
       email: "admin@admin.com",
       password: "password",
     };
-    const user = [
+    const user = 
       {
         id: 1,
         username: "Admin",
         role: "admin",
         email: "admin@admin.com",
         password: "valid-hash",
-      },
-    ];
+      }
+    ;
 
     const token = "TOKEN";
-    sinon.stub(SequelizeUser, "findOne").resolves(user as any);
-    sinon.stub(bcrypt, "compare").resolves(true);
-    sinon.stub(jwt, "sign").resolves(token);
+    sinon.stub(bcrypt, 'compare').resolves(true);
+    sinon.stub(SequelizeUser, "findOne").resolves(SequelizeUser.build(user));
+    sinon.stub(jwt, 'sign').callsFake((payload, secret, options) => token);
 
     const { status, body } = await chai
       .request(app)
-      .get("/login")
+      .post("/login")
       .send(credentials);
 
     expect(status).to.be.equal(200);
     expect(body).to.be.deep.equal({ token });
+  });
+
+  it("POST /login deve retornar um token", async () => {
+    const credentials = {
+      email: "invalid@admin.com",
+      password: "password",
+    };
+    
+
+    sinon.stub(SequelizeUser, "findOne").resolves(null);
+
+    const { status, body } = await chai
+      .request(app)
+      .post("/login")
+      .send(credentials);
+
+    expect(status).to.be.equal(401);
+    expect(body).to.be.deep.equal({ message: 'Invalid email or password' });
   });
 });
