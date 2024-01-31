@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import * as Joi from 'joi';
-import { ServiceResponse } from '../Interfaces/ServiceResponse';
+import { ServiceResponse, ServiceResponseError } from '../Interfaces/ServiceResponse';
 import SequelizeUser from '../database/models/UserModel';
 import { LoginData } from '../Interfaces/ILogin';
 
@@ -14,6 +14,18 @@ export default class LoginService {
   private _secret = process.env.JWT_SECRET ?? 'secret';
   private _invalidMessage = 'Invalid email or password';
 
+  validateError(error: Joi.ValidationError): ServiceResponseError | undefined {
+    if (error && error.message === this._invalidMessage) {
+      return { status: 'unauthorized',
+        data: { message: error.message } };
+    }
+
+    if (error && error.message !== this._invalidMessage) {
+      return { status: 'badRequest',
+        data: { message: error.message } };
+    }
+  }
+
   async validateLogin({ email, password }: LoginData) {
     const filled = 'All fields must be filled';
     const loginSchema = Joi.object({
@@ -21,23 +33,23 @@ export default class LoginService {
         .required().messages({
           'any.required': filled,
           'string.empty': filled,
-          'string.pattern.base': 'Email must be like example@example.com',
+          'string.pattern.base':
+          this._invalidMessage,
         }),
-      password: Joi.string().min(6)
-        .required().messages({ 'any.required': filled,
+      password: Joi.string().min(6).required()
+        .messages({ 'any.required': filled,
           'string.min': this._invalidMessage,
           'string.empty': filled }),
     });
 
     const { error } = loginSchema.validate({ email, password });
-
-    if (error) return { message: error.message };
+    if (error) return this.validateError(error);
   }
 
   async login({ email,
     password }: LoginData):Promise<ServiceResponse<LoginToken>> {
     const error = await this.validateLogin({ email, password });
-    if (error) return { status: 'badRequest', data: { message: error.message } };
+    if (error) return { status: error.status, data: { message: error.data.message } };
     const user = await this.model.findOne({ where: { email } });
 
     if (!user) {

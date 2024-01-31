@@ -11,6 +11,7 @@ loginRouter.post(
   '/',
   (req, res) => loginController.login(req, res),
 );
+
 loginRouter.get(
   '/role',
   (req, res, next) => authMiddleware.auth(req, res, next),
