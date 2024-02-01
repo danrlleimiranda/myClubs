@@ -6,6 +6,13 @@ export type UpdateType = {
   homeTeamGoals: number;
 };
 
+export type CreateType = {
+  homeTeamId: number;
+  awayTeamId: number;
+  homeTeamGoals: number;
+  awayTeamGoals: number;
+};
+
 export default interface IMatchModel{
   findAll(queryParams: string | undefined):Promise<SequelizeMatch[]>
   finishMatch(id: number): Promise<number>

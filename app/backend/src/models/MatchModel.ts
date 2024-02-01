@@ -1,4 +1,4 @@
-import IMatchModel, { UpdateType } from '../Interfaces/IMatchModel';
+import IMatchModel, { CreateType, UpdateType } from '../Interfaces/IMatchModel';
 import SequelizeMatch from '../database/models/MatchModel';
 import SequelizeTeam from '../database/models/TeamModel';
 
@@ -46,5 +46,16 @@ export default class MatchModel implements IMatchModel {
     });
 
     return affectedRows;
+  }
+
+  async create({ homeTeamId, awayTeamId,
+    homeTeamGoals, awayTeamGoals }: CreateType): Promise<SequelizeMatch> {
+    const newMatch = await this.model.create({ homeTeamId,
+      awayTeamId,
+      homeTeamGoals,
+      awayTeamGoals,
+      inProgress: true });
+
+    return newMatch;
   }
 }

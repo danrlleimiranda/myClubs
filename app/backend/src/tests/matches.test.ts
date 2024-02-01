@@ -36,7 +36,7 @@ describe('Rota /matches', () => {
           }
         },
         {
-          id: 41,
+          id: 2,
           homeTeamId: 16,
           homeTeamGoals: 2,
           awayTeamId: 9,
@@ -57,7 +57,37 @@ describe('Rota /matches', () => {
 
     expect(status).to.be.equal(200)
     expect(body).to.be.deep.equal(matches)
+  });
 
+
+  it('POST /matches deve criar uma partidas', async () => {
+    const match= 
+        {
+          id: 30,
+          homeTeamId: 16,
+          homeTeamGoals: 1,
+          awayTeamId: 8,
+          awayTeamGoals: 1,
+          inProgress: false,
+          homeTeam: {
+            teamName: "São Paulo"
+          },
+          awayTeam: {
+            teamName: 'Grêmio'
+          }
+        }
+      
+    sinon.stub(SequelizeMatch, 'create').resolves(match as any)
+
+
+  const {status, body} = await chai.request(app).post('/matches').send({
+    homeTeamId: 16,
+    homeTeamGoals: 1,
+    awayTeamId: 8,
+    awayTeamGoals: 1,})
+
+    expect(status).to.be.equal(201)
+    expect(body).to.be.deep.equal(match)
   });
 
 });

@@ -1,3 +1,4 @@
+import { CreateType } from '../Interfaces/IMatchModel';
 import { ServiceResponse } from '../Interfaces/ServiceResponse';
 import SequelizeMatch from '../database/models/MatchModel';
 import MatchModel from '../models/MatchModel';
@@ -32,5 +33,14 @@ export default class MatchService {
     if (updated !== 0) return { status: 'succesful', data: { message: 'Updated' } };
 
     return { status: 'badRequest', data: { message: 'Something went wrong' } };
+  }
+
+  async createMatch({ homeTeamId, awayTeamId,
+    homeTeamGoals, awayTeamGoals }: CreateType) {
+    const newMatch = await this.matchModel.create({ homeTeamId,
+      awayTeamId,
+      homeTeamGoals,
+      awayTeamGoals });
+    return { status: 'created', data: newMatch };
   }
 }
