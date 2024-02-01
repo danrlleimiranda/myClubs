@@ -1,4 +1,4 @@
-import IMatchModel from '../Interfaces/IMatchModel';
+import IMatchModel, { UpdateType } from '../Interfaces/IMatchModel';
 import SequelizeMatch from '../database/models/MatchModel';
 import SequelizeTeam from '../database/models/TeamModel';
 
@@ -22,5 +22,29 @@ export default class MatchModel implements IMatchModel {
     });
 
     return matches;
+  }
+
+  async findMatch(id: number): Promise<SequelizeMatch | null> {
+    const match = await this.model.findOne({
+      where: { id },
+    });
+
+    return match;
+  }
+
+  async finishMatch(id: number): Promise<number> {
+    const [finished] = await this.model.update({ inProgress: false }, {
+      where: { id },
+    });
+
+    return finished;
+  }
+
+  async update({ id, awayTeamGoals, homeTeamGoals }: UpdateType): Promise<number> {
+    const [affectedRows] = await this.model.update({ awayTeamGoals, homeTeamGoals }, {
+      where: { id },
+    });
+
+    return affectedRows;
   }
 }
