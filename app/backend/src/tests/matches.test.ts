@@ -2,6 +2,9 @@
 
 import * as sinon from 'sinon';
 import * as chai from 'chai';
+import * as bcrypt from "bcryptjs";
+import * as jwt from "jsonwebtoken";
+import SequelizeUser from "../database/models/UserModel";
 // @ts-ignore
 import chaiHttp = require('chai-http');
 
@@ -76,11 +79,28 @@ describe('Rota /matches', () => {
             teamName: 'Grêmio'
           }
         }
+
+        const user = 
+      {
+        id: 1,
+        username: "Admin",
+        role: "admin",
+        email: "admin@admin.com",
+        password: "valid-hash",
+      }
+    ;
+    const token = "TOKEN";
+
+    // Stub do método jwt.sign para retornar o token
+    sinon.stub(jwt, 'sign').callsFake(()=> token);
+    sinon.stub(jwt, 'verify').callsFake((payload, secret, options) => ({ id: user.id, username: user.username }));
+
+
       
-    sinon.stub(SequelizeMatch, 'create').resolves(match as any)
+    sinon.stub(SequelizeMatch, 'create').resolves(match as any);
 
 
-  const {status, body} = await chai.request(app).post('/matches').send({
+  const {status, body} = await chai.request(app).post('/matches').set('Authorization', `Bearer ${token}`).send({
     homeTeamId: 16,
     homeTeamGoals: 1,
     awayTeamId: 8,

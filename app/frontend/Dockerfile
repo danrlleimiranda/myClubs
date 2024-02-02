@@ -12,5 +12,5 @@ COPY . .
 # Sinalize que aplicação expõe a porta 3000
 EXPOSE 3000
 # Configurar os comandos para iniciar a aplicação de acordo com as boas práticas
-ENTRYPOINT ["npm", "start"]
+CMD ["npm", "start"]
 # Dica: Leia a seção Docker e Docker-compose no README para mais informações
