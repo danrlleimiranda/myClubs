@@ -10,4 +10,10 @@ export default class LeaderboardService {
 
     return { status: 'succesful', data: leaderboard };
   }
+
+  async getLeaderboardAway() {
+    const leaderboard = await this.leaderboardModel.getLeaderboardAway();
+
+    return { status: 'succesful', data: leaderboard };
+  }
 }
