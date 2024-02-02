@@ -9,6 +9,11 @@ interface SequelizeTeamInstanceAway extends SequelizeTeam {
   awayMatches: SequelizeMatch[];
 }
 
+interface SequelizeTeamInstance extends SequelizeTeam {
+  homeMatches: SequelizeMatch[];
+  awayMatches: SequelizeMatch[];
+}
+
 type ResultType = {
   name: string;
   totalPoints: number,
@@ -152,5 +157,21 @@ export default class LeaderboardModel {
     })).sort((a, b) => a.id - b.id) as SequelizeTeamInstanceAway[];
 
     return LeaderboardModel.calculateResultsAway(matches);
+  }
+
+  async getLeaderboard() {
+    const matchesUnfiltered = await this.model.findAll({
+      include: [{ model: SequelizeMatch, as: 'homeMatches' },
+        { model: SequelizeMatch, as: 'awayMatches' }],
+    }) as SequelizeTeamInstance[];
+
+    const matches = matchesUnfiltered.map((match) => ({
+      id: match.id,
+      teamName: match.teamName,
+      homeMatches: match.homeMatches.filter((home) => !home.inProgress),
+      awayMatches: match.awayMatches.filter((away) => !away.inProgress),
+    })) as SequelizeTeamInstance[];
+
+    return matches;
   }
 }
