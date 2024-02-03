@@ -9,10 +9,10 @@ interface SequelizeTeamInstanceAway extends SequelizeTeam {
   awayMatches: SequelizeMatch[];
 }
 
-interface SequelizeTeamInstance extends SequelizeTeam {
-  homeMatches: SequelizeMatch[];
-  awayMatches: SequelizeMatch[];
-}
+// interface SequelizeTeamInstance extends SequelizeTeam {
+//   homeMatches: SequelizeMatch[];
+//   awayMatches: SequelizeMatch[];
+// }
 
 type ResultType = {
   name: string;
@@ -28,6 +28,16 @@ type ResultType = {
 };
 export default class LeaderboardModel {
   private model = SequelizeTeam;
+  private result = { name: '',
+    totalPoints: 0,
+    totalGames: 0,
+    totalVictories: 0,
+    totalDraws: 0,
+    totalLosses: 0,
+    goalsFavor: 0,
+    goalsOwn: 0,
+    goalsBalance: 0,
+    efficiency: 0 };
 
   static reducedResultsHome(match: SequelizeTeamInstanceHome) {
     return (acc: ResultType, curr: SequelizeMatch) => {
@@ -131,6 +141,23 @@ export default class LeaderboardModel {
     return leaderboard;
   }
 
+  static reduceResult() {
+    return (acc: ResultType, curr: ResultType) => {
+      acc.name = curr.name;
+      acc.totalGames += curr.totalGames;
+      acc.goalsFavor += curr.goalsFavor;
+      acc.totalDraws += curr.totalDraws;
+      acc.totalLosses += curr.totalLosses;
+      acc.totalVictories += curr.totalVictories;
+      acc.totalPoints = acc.totalVictories * 3 + acc.totalDraws;
+      acc.efficiency = Number(((acc.totalPoints / (acc.totalGames * 3)) * 100).toFixed(2));
+      acc.goalsOwn += curr.goalsOwn;
+      acc.goalsBalance = acc.goalsFavor - acc.goalsOwn;
+
+      return acc;
+    };
+  }
+
   async getLeaderboardHome() {
     const matchesUnfiltered = await this.model.findAll({
       include: { model: SequelizeMatch, as: 'homeMatches' },
@@ -160,18 +187,23 @@ export default class LeaderboardModel {
   }
 
   async getLeaderboard() {
-    const matchesUnfiltered = await this.model.findAll({
-      include: [{ model: SequelizeMatch, as: 'homeMatches' },
-        { model: SequelizeMatch, as: 'awayMatches' }],
-    }) as SequelizeTeamInstance[];
+    const homeMatches = await this.getLeaderboardHome();
+    const awayMatches = await this.getLeaderboardAway();
 
-    const matches = matchesUnfiltered.map((match) => ({
-      id: match.id,
-      teamName: match.teamName,
-      homeMatches: match.homeMatches.filter((home) => !home.inProgress),
-      awayMatches: match.awayMatches.filter((away) => !away.inProgress),
-    })) as SequelizeTeamInstance[];
+    const allMatches = [...homeMatches, ...awayMatches].sort((a, b) => a.name
+      .localeCompare(b.name));
 
-    return matches;
+    const allResults: ResultType[] = [];
+
+    allMatches.forEach((match: ResultType, index, array) => {
+      if (array[index + 1] && match.name === array[index + 1].name) {
+        const result: ResultType = [{ ...match }, { ...array[index + 1] }]
+          .reduce(LeaderboardModel.reduceResult(), { ...this.result });
+
+        allResults.push(result);
+      }
+    });
+
+    return allResults.sort(LeaderboardModel.sortResults());
   }
 }
